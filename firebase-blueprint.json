@@ -1,0 +1,139 @@
+{
+  "entities": {
+    "Admin": {
+      "title": "Admin",
+      "description": "System administrator user record",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "description": "Admin email address" },
+        "role": { "type": "string", "enum": ["admin"], "description": "User role" },
+        "fullName": { "type": "string", "description": "Full legal name" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["email", "role"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "Paid client account record",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string", "description": "Client full name" },
+        "email": { "type": "string", "description": "Client email" },
+        "phone": { "type": "string", "description": "Client phone number" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"], "description": "Admin approval status" },
+        "packageId": { "type": "string", "enum": ["monthly", "yearly"], "description": "Selected membership package" },
+        "signupDate": { "type": "string", "description": "Registration date" },
+        "remainingTakedowns": { "type": "number", "description": "Remaining takedowns count (-1 for unlimited)" },
+        "totalSubmitted": { "type": "number", "description": "Total cases filed" },
+        "totalRemoved": { "type": "number", "description": "Total successful content removals" }
+      },
+      "required": ["fullName", "email", "phone", "status", "packageId"]
+    },
+    "Package": {
+      "title": "Package",
+      "description": "Membership protection package model",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Package name" },
+        "price": { "type": "string", "description": "Display price string" },
+        "priceValue": { "type": "number", "description": "Numeric price USD" },
+        "takedowns": { "type": "string", "description": "Takedown description" },
+        "maxTakedowns": { "type": "number", "description": "Maximum allowed takedowns" },
+        "duration": { "type": "string", "description": "Package validity period" },
+        "coverage": { "type": "string", "description": "Platform coverage" }
+      },
+      "required": ["name", "price", "maxTakedowns"]
+    },
+    "Case": {
+      "title": "Case",
+      "description": "IP Infringement Takedown Case Report",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string", "description": "Associated client ID" },
+        "clientName": { "type": "string", "description": "Client name" },
+        "clientEmail": { "type": "string", "description": "Client email" },
+        "clientPhone": { "type": "string", "description": "Client phone" },
+        "platform": { "type": "string", "description": "Infringing platform name" },
+        "infringingUrl": { "type": "string", "description": "URL of stolen or unauthorized content" },
+        "originalUrl": { "type": "string", "description": "URL of client's original copyrighted work" },
+        "additionalDescription": { "type": "string", "description": "Details of infringement" },
+        "violationReason": { "type": "string", "description": "Legal claim explanation" },
+        "status": { "type": "string", "enum": ["Submitted", "In Review", "Content Removed", "Rejected"], "description": "Case enforcement status" },
+        "submittedAt": { "type": "string", "description": "Case submission date" },
+        "updatedAt": { "type": "string", "description": "Last status modification date" }
+      },
+      "required": ["clientId", "platform", "infringingUrl", "originalUrl", "status"]
+    },
+    "CaseStatusHistory": {
+      "title": "CaseStatusHistory",
+      "description": "Audit trail log for case status changes",
+      "type": "object",
+      "properties": {
+        "caseId": { "type": "string", "description": "Referenced case ID" },
+        "oldStatus": { "type": "string", "description": "Previous status" },
+        "newStatus": { "type": "string", "description": "Updated status" },
+        "updatedBy": { "type": "string", "description": "Admin email or system" },
+        "notes": { "type": "string", "description": "Admin notes" },
+        "timestamp": { "type": "string", "description": "Audit timestamp" }
+      },
+      "required": ["caseId", "oldStatus", "newStatus", "timestamp"]
+    },
+    "LoginHistory": {
+      "title": "LoginHistory",
+      "description": "Authentication audit log",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "User identifier" },
+        "userEmail": { "type": "string", "description": "User email address" },
+        "role": { "type": "string", "enum": ["admin", "client"], "description": "User role at login" },
+        "ipAddress": { "type": "string", "description": "Client IP address" },
+        "timestamp": { "type": "string", "description": "Login time" }
+      },
+      "required": ["userEmail", "role", "timestamp"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Client or Admin inbox notification",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Recipient user ID" },
+        "title": { "type": "string", "description": "Notification title" },
+        "message": { "type": "string", "description": "Notification body" },
+        "type": { "type": "string", "enum": ["info", "success", "warning", "alert"], "description": "Severity type" },
+        "isRead": { "type": "boolean", "description": "Read flag" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["userId", "title", "message"]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "System administrator records"
+    },
+    "/clients/{clientId}": {
+      "schema": "Client",
+      "description": "Registered clients and approval queue"
+    },
+    "/packages/{packageId}": {
+      "schema": "Package",
+      "description": "Protection plan catalog"
+    },
+    "/cases/{caseId}": {
+      "schema": "Case",
+      "description": "IP protection enforcement cases"
+    },
+    "/caseStatusHistory/{historyId}": {
+      "schema": "CaseStatusHistory",
+      "description": "Case lifecycle audit logs"
+    },
+    "/loginHistory/{historyId}": {
+      "schema": "LoginHistory",
+      "description": "Security login history logs"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User system notifications"
+    }
+  }
+}

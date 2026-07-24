@@ -1,0 +1,6 @@
+{
+  "name": "US Law Enforcement Department",
+  "description": "Digital Intellectual Property & Copyright Protection Enforcement System",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
