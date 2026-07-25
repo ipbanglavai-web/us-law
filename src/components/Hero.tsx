@@ -1,6 +1,7 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
 import { ShieldCheck, ShieldAlert, ArrowRight, Lock, CheckCircle2, FileCheck, Scale, Award } from 'lucide-react';
+import dojSealImage from '../assets/images/doj_seal_1784986585052.jpg';
 
 export const Hero: React.FC = () => {
   const { setActiveView, setSelectedPackageForSignup } = useApp();
@@ -20,6 +21,19 @@ export const Hero: React.FC = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-gradient-to-b from-amber-500/10 via-amber-600/5 to-transparent blur-3xl rounded-full pointer-events-none"></div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* DOJ Seal Background Watermark */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden z-0">
+          <div className="relative w-[320px] h-[320px] sm:w-[520px] sm:h-[520px] opacity-[0.09] dark:opacity-[0.12]">
+            <img 
+              src={dojSealImage} 
+              alt="Department of Justice Seal Watermark" 
+              className="w-full h-full object-contain rounded-full shadow-2xl filter drop-shadow-[0_0_15px_rgba(245,158,11,0.3)] animate-pulse duration-[10000ms]"
+            />
+          </div>
+        </div>
+
+        {/* Content Container */}
+        <div className="relative z-10">
         
         {/* Official Insignia Header Badge */}
         <div className="flex justify-center mb-6">
@@ -82,6 +96,8 @@ export const Hero: React.FC = () => {
               <span>Counterfeit Takedowns</span>
             </div>
           </div>
+
+        </div>
 
         </div>
 
