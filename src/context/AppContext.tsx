@@ -5,6 +5,7 @@ import {
   doc,
   setDoc,
   updateDoc,
+  deleteDoc,
   onSnapshot
 } from 'firebase/firestore';
 import {
@@ -337,6 +338,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     let unsubscribeCases: (() => void) | undefined;
     let unsubscribeHistory: (() => void) | undefined;
     let unsubscribeLogins: (() => void) | undefined;
+    let unsubscribeInquiries: (() => void) | undefined;
 
     try {
       // 1. Clients listener
@@ -393,6 +395,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           });
         }
       }, err => console.warn('Firestore logins sync:', err));
+
+      // 5. Inquiries listener
+      const inquiriesCol = collection(db, 'inquiries');
+      unsubscribeInquiries = onSnapshot(inquiriesCol, snapshot => {
+        if (!snapshot.empty) {
+          const loadedInq = snapshot.docs.map(docSnap => docSnap.data() as InquiryItem);
+          loadedInq.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+          setInquiries(loadedInq);
+        } else {
+          INITIAL_INQUIRIES.forEach(inq => {
+            setDoc(doc(db, 'inquiries', inq.id), inq).catch(err => console.error('Error seeding inquiry:', err));
+          });
+        }
+      }, err => console.warn('Firestore inquiries sync:', err));
     } catch (e) {
       console.warn('Firebase sync error:', e);
     }
@@ -402,6 +418,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (unsubscribeCases) unsubscribeCases();
       if (unsubscribeHistory) unsubscribeHistory();
       if (unsubscribeLogins) unsubscribeLogins();
+      if (unsubscribeInquiries) unsubscribeInquiries();
     };
   }, []);
 
@@ -812,6 +829,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteInquiry = (id: string) => {
     setInquiries(prev => prev.filter(i => i.id !== id));
+    deleteDoc(doc(db, 'inquiries', id)).catch(err => console.error('Firestore inquiry delete error:', err));
   };
 
   const resetDemoData = () => {
