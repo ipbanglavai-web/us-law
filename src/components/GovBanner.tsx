@@ -6,17 +6,17 @@ export const GovBanner: React.FC = () => {
 
   return (
     <div className="bg-white text-slate-900 border-b border-slate-200 text-xs font-[Arial,sans-serif] relative z-50 shadow-xs">
-      {/* Top Banner Bar - Thin responsive layout */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-1.5 flex flex-row items-center justify-between gap-2 overflow-x-auto whitespace-nowrap">
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="inline-flex items-center justify-center w-5 h-3.5 rounded overflow-hidden shadow-2xs border border-slate-200 bg-slate-100 text-[11px] leading-none" role="img" aria-label="US Flag">
+      {/* Top Banner Bar - Stable non-shifting mobile/desktop layout */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-1.5 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0 pr-1">
+          <span className="inline-flex items-center justify-center w-5 h-3.5 rounded overflow-hidden shadow-2xs border border-slate-200 bg-slate-100 text-[11px] leading-none shrink-0" role="img" aria-label="US Flag">
             🇺🇸
           </span>
-          <span className="text-slate-800 font-normal text-[11px] sm:text-xs">
+          <span className="text-slate-800 font-normal text-[11px] sm:text-xs truncate">
             An official website of the United States government
           </span>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="flex items-center gap-1 text-slate-800 hover:text-slate-950 font-normal focus:outline-none transition-colors py-0.5 px-1.5 rounded hover:bg-slate-100 select-none cursor-pointer"
@@ -26,21 +26,21 @@ export const GovBanner: React.FC = () => {
               Here's how you know
             </span>
             {isOpen ? (
-              <ChevronUp className="w-3.5 h-3.5 text-slate-600 transition-transform duration-300" />
+              <ChevronUp className="w-3.5 h-3.5 text-slate-600 transition-transform duration-300 shrink-0" />
             ) : (
-              <ChevronDown className="w-3.5 h-3.5 text-slate-600 transition-transform duration-300" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-600 transition-transform duration-300 shrink-0" />
             )}
           </button>
           
-          {isOpen && (
-            <button
-              onClick={() => setIsOpen(false)}
-              className="sm:hidden p-1.5 text-slate-600 hover:text-slate-950 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors ml-1 cursor-pointer"
-              aria-label="Close banner details"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className={`p-1 text-slate-600 hover:text-slate-950 bg-slate-100 hover:bg-slate-200 rounded-md transition-all duration-200 cursor-pointer shrink-0 ${
+              isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none w-0 p-0 overflow-hidden'
+            }`}
+            aria-label="Close banner details"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
