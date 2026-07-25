@@ -22,8 +22,8 @@ export const Hero: React.FC = () => {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* DOJ Seal Background Watermark */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden z-0 -translate-y-10 sm:-translate-y-12">
-          <div className="relative w-[320px] h-[320px] sm:w-[520px] sm:h-[520px] opacity-[0.18] dark:opacity-[0.22]">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden z-0 -translate-y-16 sm:-translate-y-24">
+          <div className="relative w-[320px] h-[320px] sm:w-[520px] sm:h-[520px] opacity-[0.25] dark:opacity-[0.30]">
             <img 
               src={dojSealImage} 
               alt="Department of Justice Seal Watermark" 
