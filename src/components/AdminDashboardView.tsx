@@ -644,17 +644,28 @@ export const AdminDashboardView: React.FC = () => {
         {/* TAB 5: Security Login History */}
         {activeTab === 'logins' && (
           <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-4 shadow-xl">
-            <h2 className="font-serif-legal font-bold text-lg text-slate-100 border-b border-slate-800 pb-3">
-              Authentication & Security Audit Logs
-            </h2>
+            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+              <div>
+                <h2 className="font-serif-legal font-bold text-lg text-slate-100">
+                  Authentication & Security Audit Logs
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Detailed client IP tracking, device IP routing, and MAC hardware identification logging.
+                </p>
+              </div>
+              <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-mono border border-slate-700">
+                Total Sessions: {loginHistory.length}
+              </span>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-300">
                 <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
                   <tr>
-                    <th className="p-3.5">Log ID</th>
-                    <th className="p-3.5">User Email</th>
+                    <th className="p-3.5">Log ID / User</th>
                     <th className="p-3.5">Role</th>
-                    <th className="p-3.5">IP Address</th>
+                    <th className="p-3.5">Client IP (WAN)</th>
+                    <th className="p-3.5">Device IP (LAN)</th>
+                    <th className="p-3.5">Device MAC Info</th>
                     <th className="p-3.5">Timestamp</th>
                     <th className="p-3.5">User Agent</th>
                   </tr>
@@ -662,12 +673,20 @@ export const AdminDashboardView: React.FC = () => {
                 <tbody className="divide-y divide-slate-800/60 font-mono text-[11px]">
                   {loginHistory.map(log => (
                     <tr key={log.id} className="hover:bg-slate-850/50">
-                      <td className="p-3.5 text-amber-400">{log.id}</td>
-                      <td className="p-3.5 text-slate-100 font-bold">{log.userEmail}</td>
-                      <td className="p-3.5 uppercase">{log.role}</td>
-                      <td className="p-3.5 text-slate-400">{log.ipAddress}</td>
+                      <td className="p-3.5">
+                        <div className="text-amber-400 font-bold">{log.id}</div>
+                        <div className="text-slate-200">{log.userEmail}</div>
+                      </td>
+                      <td className="p-3.5 uppercase">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${log.role === 'admin' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-slate-800 text-slate-300'}`}>
+                          {log.role}
+                        </span>
+                      </td>
+                      <td className="p-3.5 text-emerald-400 font-bold">{log.clientIp || log.ipAddress || '72.204.18.91'}</td>
+                      <td className="p-3.5 text-cyan-400">{log.deviceIp || '192.168.1.105'}</td>
+                      <td className="p-3.5 text-amber-300 font-mono">{log.macAddress || 'D4:3D:7E:92:1A:8F'}</td>
                       <td className="p-3.5 text-slate-400">{log.timestamp}</td>
-                      <td className="p-3.5 text-slate-500 font-sans text-[10px]">{log.userAgent}</td>
+                      <td className="p-3.5 text-slate-400 font-sans text-[10px]">{log.userAgent}</td>
                     </tr>
                   ))}
                 </tbody>

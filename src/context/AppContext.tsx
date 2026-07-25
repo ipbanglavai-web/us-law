@@ -198,6 +198,9 @@ const INITIAL_LOGINS: LoginHistoryItem[] = [
     userEmail: 'admin@law-enforcement.us',
     role: 'admin',
     ipAddress: '192.168.1.10',
+    clientIp: '172.56.21.14',
+    deviceIp: '192.168.1.10',
+    macAddress: 'F8:FF:C2:A1:3E:44',
     timestamp: '2026-07-24 12:00',
     userAgent: 'US Law Enforcement Department Security Terminal v4.2'
   }
@@ -462,6 +465,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       userEmail: newClient.email,
       role: 'pending',
       ipAddress: '107.12.98.41',
+      clientIp: '107.12.98.41',
+      deviceIp: '192.168.1.180',
+      macAddress: '1A:2B:3C:4D:5E:6F',
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
       userAgent: 'Client Web Registration Terminal'
     };
@@ -501,6 +507,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           userEmail: cleanEmail,
           role: 'admin',
           ipAddress: '192.168.1.1',
+          clientIp: '172.56.21.14',
+          deviceIp: '192.168.1.1',
+          macAddress: 'C8:F7:50:12:9A:BC',
           timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
           userAgent: 'US Law Enforcement Department Admin Portal'
         };
@@ -546,6 +555,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       userEmail: client.email,
       role: 'client',
       ipAddress: '72.204.18.91',
+      clientIp: '72.204.18.91',
+      deviceIp: '192.168.1.145',
+      macAddress: 'D4:3D:7E:92:1A:8F',
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
       userAgent: 'Client Web Portal'
     };

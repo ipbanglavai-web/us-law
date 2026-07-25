@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { GovBanner } from './GovBanner';
 import {
   ShieldCheck,
   Menu,
@@ -42,6 +43,9 @@ export const Navbar: React.FC = () => {
 
   return (
     <div className="flex flex-col">
+      {/* Official US Gov Banner with Tap-to-Open Interactive Function */}
+      <GovBanner />
+
       {/* Top Legal Notice Bar - Hidden when logged in as client or admin */}
       {!currentUser && (
         <div className="order-2 md:order-1 bg-slate-950 text-slate-300 py-2 px-3 sm:px-4 border-b border-slate-800/80 border-t md:border-t-0">

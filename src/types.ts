@@ -80,6 +80,9 @@ export interface LoginHistoryItem {
   userEmail: string;
   role: UserRole;
   ipAddress: string;
+  clientIp: string;
+  deviceIp: string;
+  macAddress: string;
   timestamp: string;
   userAgent: string;
 }
