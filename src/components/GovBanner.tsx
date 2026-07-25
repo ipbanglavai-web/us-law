@@ -7,41 +7,49 @@ export const GovBanner: React.FC = () => {
   return (
     <div className="bg-white text-slate-900 border-b border-slate-200 text-xs font-[Arial,sans-serif] relative z-50 shadow-xs">
       {/* Top Banner Bar - Stable non-shifting mobile/desktop layout */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-1.5 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0 pr-1">
-          <span className="inline-flex items-center justify-center w-5 h-3.5 rounded overflow-hidden shadow-2xs border border-slate-200 bg-slate-100 text-[11px] leading-none shrink-0" role="img" aria-label="US Flag">
-            🇺🇸
-          </span>
-          <span className="text-slate-800 font-normal text-[11px] sm:text-xs truncate">
-            An official website of the United States government
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-1 text-slate-800 hover:text-slate-950 font-normal focus:outline-none transition-colors py-0.5 px-1.5 rounded hover:bg-slate-100 select-none cursor-pointer"
-            aria-expanded={isOpen}
-          >
-            <span className="underline decoration-slate-400 decoration-1 underline-offset-4 hover:decoration-blue-600 transition-all">
-              Here's how you know
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-1.5 flex items-center justify-between gap-2 relative">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex-1 flex items-center justify-start gap-2 text-left focus:outline-none group cursor-pointer select-none py-0.5 min-w-0 pr-6"
+          aria-expanded={isOpen}
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="inline-flex items-center justify-center w-5 h-3.5 rounded overflow-hidden shadow-2xs border border-slate-200 bg-slate-100 text-[11px] leading-none shrink-0" role="img" aria-label="US Flag">
+              🇺🇸
             </span>
-            {isOpen ? (
-              <ChevronUp className="w-3.5 h-3.5 text-slate-600 transition-transform duration-300 shrink-0" />
-            ) : (
-              <ChevronDown className="w-3.5 h-3.5 text-slate-600 transition-transform duration-300 shrink-0" />
-            )}
-          </button>
-          
+            <span className="text-slate-800 font-normal text-[11px] sm:text-xs inline-flex items-center gap-1.5 min-w-0 truncate">
+              <span className="truncate">An official website of the United States government</span>
+              {isOpen ? (
+                <ChevronUp className="w-3.5 h-3.5 text-slate-600 shrink-0 transition-transform duration-300" />
+              ) : (
+                <ChevronDown className="w-3.5 h-3.5 text-slate-600 shrink-0 transition-transform duration-300" />
+              )}
+            </span>
+          </div>
+        </button>
+
+        {isOpen && (
           <button
-            onClick={() => setIsOpen(!isOpen)}
-            className={`p-1 text-slate-600 hover:text-slate-950 bg-slate-100 hover:bg-slate-200 rounded-md transition-all duration-200 cursor-pointer shrink-0 ${
-              isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none w-0 p-0 overflow-hidden'
-            }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+            }}
+            className="flex sm:hidden absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-950 rounded-full transition-all duration-200 cursor-pointer shadow-2xs z-10"
+            aria-label="Close banner details"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
+
+        {isOpen && (
+          <button
+            onClick={() => setIsOpen(false)}
+            className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 w-7 h-7 items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-950 rounded-full transition-all duration-200 cursor-pointer shadow-2xs z-10"
             aria-label="Close banner details"
           >
             <X className="w-4 h-4" />
           </button>
-        </div>
+        )}
       </div>
 
       {/* Smooth Expandable Panel with Grid Transition */}
@@ -86,7 +94,7 @@ export const GovBanner: React.FC = () => {
                   </button>
                 </div>
                 <p className="text-[11px] sm:text-xs text-slate-700 leading-relaxed font-[Arial,sans-serif]">
-                  A lock (<span className="text-emerald-700 font-bold">🔒</span>) or <code className="text-emerald-800 font-mono bg-emerald-100 px-1 py-0.5 rounded text-[11px]">https://</code> means you've safely connected to the .us website. Share sensitive information only on official, secure websites.
+                  A lock (<Lock className="w-3.5 h-3.5 inline-block text-slate-900 mx-0.5 -mt-0.5" />) or <code className="text-emerald-800 font-mono bg-emerald-100 px-1 py-0.5 rounded text-[11px]">https://</code> means you've safely connected to the .us website. Share sensitive information only on official, secure websites.
                 </p>
               </div>
             </div>
