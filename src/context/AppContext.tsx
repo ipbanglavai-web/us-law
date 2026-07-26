@@ -383,6 +383,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     let unsubscribeHistory: (() => void) | undefined;
     let unsubscribeLogins: (() => void) | undefined;
     let unsubscribeInquiries: (() => void) | undefined;
+    let unsubscribeMessages: (() => void) | undefined;
 
     try {
       // 1. Clients listener
@@ -453,6 +454,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           });
         }
       }, err => console.warn('Firestore inquiries sync:', err));
+
+      // 6. Messages listener
+      const messagesCol = collection(db, 'messages');
+      unsubscribeMessages = onSnapshot(messagesCol, snapshot => {
+        if (!snapshot.empty) {
+          const loadedMsgs = snapshot.docs.map(docSnap => docSnap.data() as DirectMessage);
+          loadedMsgs.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+          setMessages(loadedMsgs);
+        } else {
+          INITIAL_MESSAGES.forEach(msg => {
+            setDoc(doc(db, 'messages', msg.id), msg).catch(err => console.error('Error seeding message:', err));
+          });
+        }
+      }, err => console.warn('Firestore messages sync:', err));
     } catch (e) {
       console.warn('Firebase sync error:', e);
     }
@@ -463,6 +478,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (unsubscribeHistory) unsubscribeHistory();
       if (unsubscribeLogins) unsubscribeLogins();
       if (unsubscribeInquiries) unsubscribeInquiries();
+      if (unsubscribeMessages) unsubscribeMessages();
     };
   }, []);
 
@@ -880,6 +896,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       );
       if (currentUser && (currentUser as ClientUser).id === targetClientId) {
         setCurrentUser((prev: any) => ({ ...prev, totalRemoved: prev.totalRemoved + 1 }));
+      }
+    }
+
+    // If status changed to 'In Review', trigger auto-generated system mail/message to client
+    if (newStatus === 'In Review') {
+      const targetCase = cases.find(c => c.id === caseId);
+      if (targetCase && targetClientId) {
+        const foundClient = clients.find(c => c.id === targetClientId);
+        const clientName = targetCase.clientName || (foundClient ? foundClient.fullName : 'Client');
+        const clientEmail = targetCase.clientEmail || (foundClient ? foundClient.email : 'client@domain.com');
+
+        const caseDetailsText = `Platform: ${targetCase.platform}\nInfringing URL: ${targetCase.infringingUrl}\nOriginal URL: ${targetCase.originalUrl || 'N/A'}\nViolation Reason: ${targetCase.violationReason}\nDescription: ${targetCase.additionalDescription || 'N/A'}\nSubmitted At: ${targetCase.submittedAt}`;
+        const autoMailText = `Hi "${clientName}", we have received your case no: ${targetCase.id} and is now in review. Case You Submitted:\n${caseDetailsText}`;
+
+        const msgId = 'msg-' + Date.now();
+        const autoMsg: DirectMessage = {
+          id: msgId,
+          clientId: targetClientId,
+          clientName,
+          clientEmail,
+          sender: 'admin',
+          message: autoMailText,
+          timestamp: nowTime,
+          isRead: false
+        };
+        setMessages(prev => [autoMsg, ...prev]);
+        setDoc(doc(db, 'messages', msgId), autoMsg).catch(err => console.error('Firestore auto mail save error:', err));
       }
     }
 
