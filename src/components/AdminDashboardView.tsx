@@ -25,7 +25,9 @@ import {
   FileText,
   AlertCircle,
   X,
-  Globe
+  Globe,
+  MessageSquare,
+  Send
 } from 'lucide-react';
 
 export const AdminDashboardView: React.FC = () => {
@@ -37,21 +39,30 @@ export const AdminDashboardView: React.FC = () => {
     caseHistory,
     loginHistory,
     inquiries,
+    messages,
     approveClient,
     rejectClient,
+    banClient,
+    unbanClient,
     updateCaseStatus,
     markInquiryRead,
     deleteInquiry,
+    sendDirectMessage,
+    markMessageRead,
     resetDemoData
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'pending' | 'cases' | 'clients' | 'database' | 'logins' | 'inquiries'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'cases' | 'clients' | 'database' | 'logins' | 'inquiries' | 'messages'>('pending');
 
   // Case management filters
   const [caseSearch, setCaseSearch] = useState('');
   const [casePlatformFilter, setCasePlatformFilter] = useState('ALL');
   const [caseStatusFilter, setCaseStatusFilter] = useState('ALL');
   const [caseSortBy, setCaseSortBy] = useState<'date' | 'platform'>('date');
+
+  // Messaging state
+  const [selectedMsgClientId, setSelectedMsgClientId] = useState<string | null>('cli-101');
+  const [adminReplyText, setAdminReplyText] = useState('');
 
   // Modal states for cases
   const [editingCase, setEditingCase] = useState<CaseItem | null>(null);
@@ -252,6 +263,23 @@ export const AdminDashboardView: React.FC = () => {
           >
             <Mail className="w-4 h-4" />
             <span>Legal Inquiries ({inquiries.filter(i => !i.isRead).length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('messages')}
+            className={`pb-3 px-4 border-b-2 transition-colors flex items-center gap-2 shrink-0 ${
+              activeTab === 'messages'
+                ? 'border-amber-400 text-amber-400 font-bold'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4 text-amber-400" />
+            <span>Message Portal</span>
+            {messages.filter(m => m.sender === 'client' && !m.isRead).length > 0 && (
+              <span className="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {messages.filter(m => m.sender === 'client' && !m.isRead).length}
+              </span>
+            )}
           </button>
         </div>
 
@@ -515,6 +543,166 @@ export const AdminDashboardView: React.FC = () => {
           </div>
         )}
 
+        {/* TAB: Message Portal */}
+        {activeTab === 'messages' && (
+          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-4 shadow-xl">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-4">
+              <div>
+                <h2 className="font-serif-legal font-bold text-lg text-slate-100 flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-amber-400" />
+                  <span>Admin Client Direct Message Portal</span>
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Receive direct messages from clients and reply to them securely in real time
+                </p>
+              </div>
+              <div className="text-xs font-mono text-amber-400 bg-amber-500/10 px-3 py-1 rounded-lg border border-amber-500/30">
+                {messages.filter(m => m.sender === 'client' && !m.isRead).length} Unread Client Messages
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Clients List with Messages */}
+              <div className="lg:col-span-1 bg-slate-950 rounded-xl border border-slate-800 p-3 overflow-y-auto max-h-[500px] space-y-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-2 py-1">Conversations</h3>
+                {clients.map(cli => {
+                  const cliMsgs = messages.filter(m => m.clientId === cli.id);
+                  const lastMsg = cliMsgs[cliMsgs.length - 1];
+                  const unreadCliCount = cliMsgs.filter(m => m.sender === 'client' && !m.isRead).length;
+                  const isSelected = selectedMsgClientId === cli.id;
+
+                  return (
+                    <button
+                      key={cli.id}
+                      onClick={() => {
+                        setSelectedMsgClientId(cli.id);
+                        cliMsgs.forEach(m => {
+                          if (m.sender === 'client' && !m.isRead) markMessageRead(m.id);
+                        });
+                      }}
+                      className={`w-full text-left p-3 rounded-xl transition-all flex flex-col gap-1 border ${
+                        isSelected
+                          ? 'bg-amber-500/15 border-amber-500 text-white'
+                          : 'bg-slate-900/60 border-slate-800/80 hover:bg-slate-900 text-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <strong className="text-xs font-bold text-slate-100 truncate">{cli.fullName}</strong>
+                        {unreadCliCount > 0 && (
+                          <span className="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                            {unreadCliCount}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-slate-400 font-mono truncate">{cli.email}</span>
+                      {lastMsg ? (
+                        <p className="text-[11px] text-slate-300 truncate mt-1 italic">
+                          "{lastMsg.message}"
+                        </p>
+                      ) : (
+                        <span className="text-[10px] text-slate-500 italic mt-1">No messages yet</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Chat Thread & Reply Box */}
+              <div className="lg:col-span-2 bg-slate-950 rounded-xl border border-slate-800 p-4 flex flex-col h-[500px]">
+                {selectedMsgClientId ? (
+                  <>
+                    {/* Header */}
+                    {(() => {
+                      const activeClient = clients.find(c => c.id === selectedMsgClientId);
+                      const threadMsgs = messages.filter(m => m.clientId === selectedMsgClientId);
+                      return (
+                        <>
+                          <div className="border-b border-slate-800 pb-3 mb-3 flex items-center justify-between">
+                            <div>
+                              <h4 className="font-serif-legal font-bold text-sm text-slate-100">
+                                {activeClient ? activeClient.fullName : 'Client'}
+                              </h4>
+                              <p className="text-[10px] text-slate-400 font-mono">{activeClient?.email} • {activeClient?.phone}</p>
+                            </div>
+                            <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase font-bold">
+                              {activeClient?.status || 'Active'}
+                            </span>
+                          </div>
+
+                          {/* Message List */}
+                          <div className="flex-1 overflow-y-auto space-y-3 p-2">
+                            {threadMsgs.length === 0 ? (
+                              <div className="h-full flex items-center justify-center text-xs text-slate-500 italic">
+                                No direct messages exchanged with this client yet. Send a message below.
+                              </div>
+                            ) : (
+                              threadMsgs.map(m => (
+                                <div
+                                  key={m.id}
+                                  className={`flex flex-col ${m.sender === 'admin' ? 'items-end' : 'items-start'}`}
+                                >
+                                  <div
+                                    className={`max-w-[80%] p-3 rounded-xl text-xs leading-relaxed shadow ${
+                                      m.sender === 'admin'
+                                        ? 'bg-amber-500 text-slate-950 font-medium rounded-br-none'
+                                        : 'bg-slate-900 text-slate-100 border border-slate-800 rounded-bl-none font-sans'
+                                    }`}
+                                  >
+                                    <div className="flex items-center justify-between gap-3 mb-1 text-[9px] opacity-75 font-mono">
+                                      <span>{m.sender === 'admin' ? 'Admin Duty Officer' : activeClient?.fullName}</span>
+                                      <span>{m.timestamp}</span>
+                                    </div>
+                                    <p className="whitespace-pre-wrap">{m.message}</p>
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+
+                          {/* Reply Form */}
+                          <form
+                            onSubmit={e => {
+                              e.preventDefault();
+                              if (!adminReplyText.trim()) return;
+                              sendDirectMessage(adminReplyText, selectedMsgClientId);
+                              setAdminReplyText('');
+                            }}
+                            className="mt-3 pt-3 border-t border-slate-800 flex items-center gap-2"
+                          >
+                            <input
+                              type="text"
+                              value={adminReplyText}
+                              onChange={e => setAdminReplyText(e.target.value)}
+                              placeholder={`Reply to ${activeClient?.fullName || 'Client'} as Admin...`}
+                              className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-100 focus:outline-none focus:border-amber-500"
+                            />
+                            <button
+                              type="submit"
+                              disabled={!adminReplyText.trim()}
+                              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow"
+                            >
+                              <span>Send</span>
+                              <Send className="w-3.5 h-3.5" />
+                            </button>
+                          </form>
+                        </>
+                      );
+                    })()}
+                  </>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-2">
+                    <MessageSquare className="w-10 h-10 text-slate-600" />
+                    <h5 className="font-serif-legal font-bold text-sm text-slate-300">Select a Conversation</h5>
+                    <p className="text-xs text-slate-500 max-w-xs">
+                      Choose a client from the list on the left to inspect chat history and transmit direct administrative replies.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* TAB 3: Client Accounts Directory */}
         {activeTab === 'clients' && (
           <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-4 shadow-xl">
@@ -531,6 +719,7 @@ export const AdminDashboardView: React.FC = () => {
                     <th className="p-3.5">Account Status</th>
                     <th className="p-3.5">Cases Filed</th>
                     <th className="p-3.5">Content Removed</th>
+                    <th className="p-3.5 text-right">Membership Control</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 font-sans">
@@ -554,6 +743,8 @@ export const AdminDashboardView: React.FC = () => {
                               ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                               : c.status === 'pending'
                               ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                              : c.status === 'banned'
+                              ? 'bg-red-500/20 text-red-300 border border-red-500/40 font-extrabold animate-pulse'
                               : 'bg-red-500/20 text-red-300 border border-red-500/40'
                           }`}
                         >
@@ -562,6 +753,34 @@ export const AdminDashboardView: React.FC = () => {
                       </td>
                       <td className="p-3.5 font-mono font-bold text-slate-200">{c.totalSubmitted}</td>
                       <td className="p-3.5 font-mono font-bold text-emerald-400">{c.totalRemoved}</td>
+                      <td className="p-3.5 text-right">
+                        {c.status === 'approved' && (
+                          <button
+                            onClick={() => banClient(c.id)}
+                            className="px-2.5 py-1 rounded bg-red-600 hover:bg-red-500 text-white font-bold text-[10px] uppercase shadow inline-flex items-center gap-1 transition-colors"
+                            title="Ban user due to unusual activities"
+                          >
+                            <UserX className="w-3 h-3" />
+                            <span>Ban User</span>
+                          </button>
+                        )}
+                        {c.status === 'banned' && (
+                          <button
+                            onClick={() => unbanClient(c.id)}
+                            className="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] uppercase shadow inline-flex items-center gap-1 transition-colors"
+                            title="Reinstate / Unban user"
+                          >
+                            <UserCheck className="w-3 h-3" />
+                            <span>Unban</span>
+                          </button>
+                        )}
+                        {c.status === 'pending' && (
+                          <span className="text-[10px] text-slate-500 italic">Pending Approval</span>
+                        )}
+                        {c.status === 'rejected' && (
+                          <span className="text-[10px] text-red-400 italic">Rejected</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

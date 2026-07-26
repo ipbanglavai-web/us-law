@@ -16,6 +16,8 @@ import { LoginModal } from './components/LoginModal';
 import { ClientDashboardView } from './components/ClientDashboardView';
 import { AdminDashboardView } from './components/AdminDashboardView';
 import { PendingNoticeModal } from './components/PendingNoticeModal';
+import { BannedModal } from './components/BannedModal';
+import { ClientMessageWidget } from './components/ClientMessageWidget';
 
 export const App: React.FC = () => {
   const { activeView, setActiveView, currentUser, currentRole } = useApp();
@@ -31,8 +33,10 @@ export const App: React.FC = () => {
       {/* Top Navigation */}
       <Navbar />
 
-      {/* Pending Account Notice Popup Modal */}
+      {/* Pending Account Notice Popup Modal & Floating Client Message Widget */}
       <PendingNoticeModal />
+      <BannedModal />
+      <ClientMessageWidget />
 
       {/* Main View Router */}
       <main className="flex-grow">

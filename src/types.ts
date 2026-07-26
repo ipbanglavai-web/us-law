@@ -1,6 +1,6 @@
 export type UserRole = 'admin' | 'client' | 'pending';
 
-export type ClientStatus = 'pending' | 'approved' | 'rejected';
+export type ClientStatus = 'pending' | 'approved' | 'rejected' | 'banned';
 
 export interface PackagePlan {
   id: 'monthly' | 'yearly';
@@ -107,6 +107,17 @@ export interface InquiryItem {
   submittedAt: string;
   isRead: boolean;
   status: 'New' | 'In Review' | 'Resolved';
+}
+
+export interface DirectMessage {
+  id: string;
+  clientId: string;
+  clientName: string;
+  clientEmail: string;
+  sender: 'client' | 'admin';
+  message: string;
+  timestamp: string;
+  isRead: boolean;
 }
 
 export interface DatabaseTablesOverview {

@@ -18,6 +18,7 @@ import {
   LoginHistoryItem,
   NotificationItem,
   InquiryItem,
+  DirectMessage,
   PlatformType,
   CaseStatus,
 } from '../types';
@@ -33,6 +34,29 @@ const INITIAL_INQUIRIES: InquiryItem[] = [
     submittedAt: '2026-07-24 11:20',
     isRead: false,
     status: 'New'
+  }
+];
+
+const INITIAL_MESSAGES: DirectMessage[] = [
+  {
+    id: 'msg-1',
+    clientId: 'cli-101',
+    clientName: 'Robert Sterling',
+    clientEmail: 'robert@sterlingmedia.com',
+    sender: 'client',
+    message: 'Hello Admin, I have submitted a new YouTube takedown case (USL-2026-8841). Can you please confirm receipt and priority review?',
+    timestamp: '2026-07-20 11:18',
+    isRead: false
+  },
+  {
+    id: 'msg-2',
+    clientId: 'cli-101',
+    clientName: 'Robert Sterling',
+    clientEmail: 'robert@sterlingmedia.com',
+    sender: 'admin',
+    message: 'Hello Robert. Case received and assigned to our legal operations desk. DMCA notice is being dispatched.',
+    timestamp: '2026-07-20 11:30',
+    isRead: true
   }
 ];
 
@@ -214,6 +238,8 @@ interface AppContextType {
   setSelectedPackageForSignup: (pkg: PackagePlan | null) => void;
   pendingNoticeModal: boolean;
   setPendingNoticeModal: (show: boolean) => void;
+  bannedModal: boolean;
+  setBannedModal: (show: boolean) => void;
   
   // Auth State
   currentUser: ClientUser | { email: string; role: 'admin'; fullName: string } | null;
@@ -228,6 +254,7 @@ interface AppContextType {
   loginHistory: LoginHistoryItem[];
   notifications: NotificationItem[];
   inquiries: InquiryItem[];
+  messages: DirectMessage[];
   
   // Actions
   signupClient: (data: {
@@ -243,6 +270,8 @@ interface AppContextType {
   
   approveClient: (clientId: string) => void;
   rejectClient: (clientId: string) => void;
+  banClient: (clientId: string) => void;
+  unbanClient: (clientId: string) => void;
   
   fileNewCase: (caseData: {
     fullName: string;
@@ -261,6 +290,8 @@ interface AppContextType {
   submitInquiry: (data: { name: string; email: string; phone?: string; subject: string; message: string }) => { success: boolean; message: string };
   markInquiryRead: (id: string) => void;
   deleteInquiry: (id: string) => void;
+  sendDirectMessage: (messageText: string, recipientClientId?: string) => void;
+  markMessageRead: (messageId: string) => void;
   resetDemoData: () => void;
 }
 
@@ -270,6 +301,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeView, setActiveView] = useState<string>('home');
   const [selectedPackageForSignup, setSelectedPackageForSignup] = useState<PackagePlan | null>(PACKAGES[1]);
   const [pendingNoticeModal, setPendingNoticeModal] = useState<boolean>(false);
+  const [bannedModal, setBannedModal] = useState<boolean>(false);
   
   // Auth
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -314,6 +346,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : INITIAL_INQUIRIES;
   });
 
+  const [messages, setMessages] = useState<DirectMessage[]>(() => {
+    const saved = localStorage.getItem('uslaw_messages');
+    return saved ? JSON.parse(saved) : INITIAL_MESSAGES;
+  });
+
   // Sync state to local storage and Firebase Firestore real-time
   useEffect(() => {
     localStorage.setItem('uslaw_clients', JSON.stringify(clients));
@@ -334,6 +371,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem('uslaw_inquiries', JSON.stringify(inquiries));
   }, [inquiries]);
+
+  useEffect(() => {
+    localStorage.setItem('uslaw_messages', JSON.stringify(messages));
+  }, [messages]);
 
   // Firebase Firestore real-time sync
   useEffect(() => {
@@ -544,6 +585,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, message: rejectMsg };
     }
 
+    if (client.status === 'banned') {
+      const banMsg = 'You were banned due to unusual activities';
+      setAuthError(banMsg);
+      setBannedModal(true);
+      return { success: false, message: banMsg };
+    }
+
     // Approved client login
     setCurrentUser(client);
     setCurrentRole('client');
@@ -633,6 +681,45 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       status: 'rejected',
       rejectedAt: rejectedAtVal
     }).catch(err => console.error('Firestore reject error:', err));
+  };
+
+  const banClient = (clientId: string) => {
+    const bannedAtVal = new Date().toISOString().replace('T', ' ').slice(0, 16);
+    setClients(prev =>
+      prev.map(c => {
+        if (c.id === clientId) {
+          return {
+            ...c,
+            status: 'banned',
+            bannedAt: bannedAtVal
+          };
+        }
+        return c;
+      })
+    );
+
+    updateDoc(doc(db, 'clients', clientId), {
+      status: 'banned',
+      bannedAt: bannedAtVal
+    }).catch(err => console.error('Firestore ban error:', err));
+  };
+
+  const unbanClient = (clientId: string) => {
+    setClients(prev =>
+      prev.map(c => {
+        if (c.id === clientId) {
+          return {
+            ...c,
+            status: 'approved'
+          };
+        }
+        return c;
+      })
+    );
+
+    updateDoc(doc(db, 'clients', clientId), {
+      status: 'approved'
+    }).catch(err => console.error('Firestore unban error:', err));
   };
 
   // Client File New Case Action
@@ -844,17 +931,66 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     deleteDoc(doc(db, 'inquiries', id)).catch(err => console.error('Firestore inquiry delete error:', err));
   };
 
+  const sendDirectMessage = (messageText: string, recipientClientId?: string) => {
+    if (!messageText.trim()) return;
+    const now = new Date();
+    const timeStr = now.toISOString().replace('T', ' ').slice(0, 16);
+    const newId = 'msg-' + Date.now();
+
+    let targetClientId = '';
+    let targetClientName = '';
+    let targetClientEmail = '';
+    let senderType: 'client' | 'admin' = 'client';
+
+    if (currentRole === 'admin') {
+      senderType = 'admin';
+      if (!recipientClientId) return;
+      targetClientId = recipientClientId;
+      const foundClient = clients.find(c => c.id === recipientClientId);
+      targetClientName = foundClient ? foundClient.fullName : 'Client';
+      targetClientEmail = foundClient ? foundClient.email : 'client@domain.com';
+    } else if (currentRole === 'client' && currentUser) {
+      senderType = 'client';
+      targetClientId = currentUser.id;
+      targetClientName = currentUser.fullName;
+      targetClientEmail = currentUser.email;
+    } else {
+      return;
+    }
+
+    const newMsg: DirectMessage = {
+      id: newId,
+      clientId: targetClientId,
+      clientName: targetClientName,
+      clientEmail: targetClientEmail,
+      sender: senderType,
+      message: messageText.trim(),
+      timestamp: timeStr,
+      isRead: false
+    };
+
+    setMessages(prev => [...prev, newMsg]);
+    setDoc(doc(db, 'messages', newId), newMsg).catch(err => console.error('Firestore message save error:', err));
+  };
+
+  const markMessageRead = (messageId: string) => {
+    setMessages(prev => prev.map(m => (m.id === messageId ? { ...m, isRead: true } : m)));
+    updateDoc(doc(db, 'messages', messageId), { isRead: true }).catch(err => console.error(err));
+  };
+
   const resetDemoData = () => {
     localStorage.removeItem('uslaw_clients');
     localStorage.removeItem('uslaw_cases');
     localStorage.removeItem('uslaw_history');
     localStorage.removeItem('uslaw_logins');
     localStorage.removeItem('uslaw_inquiries');
+    localStorage.removeItem('uslaw_messages');
     setClients(INITIAL_CLIENTS);
     setCases(INITIAL_CASES);
     setCaseHistory(INITIAL_HISTORY);
     setLoginHistory(INITIAL_LOGINS);
     setInquiries(INITIAL_INQUIRIES);
+    setMessages(INITIAL_MESSAGES);
   };
 
   return (
@@ -866,6 +1002,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setSelectedPackageForSignup,
         pendingNoticeModal,
         setPendingNoticeModal,
+        bannedModal,
+        setBannedModal,
         currentUser,
         currentRole,
         authError,
@@ -876,17 +1014,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         loginHistory,
         notifications,
         inquiries,
+        messages,
         signupClient,
         loginUser,
         logout,
         approveClient,
         rejectClient,
+        banClient,
+        unbanClient,
         fileNewCase,
         updateCaseStatus,
         markNotificationRead,
         submitInquiry,
         markInquiryRead,
         deleteInquiry,
+        sendDirectMessage,
+        markMessageRead,
         resetDemoData
       }}
     >
