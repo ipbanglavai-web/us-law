@@ -14,8 +14,27 @@ export const GovBanner: React.FC = () => {
           aria-expanded={isOpen}
         >
           <div className="flex items-center gap-2 min-w-0">
-            <span className="inline-flex items-center justify-center w-5 h-3.5 rounded overflow-hidden shadow-2xs border border-slate-200 bg-slate-100 text-[11px] leading-none shrink-0" role="img" aria-label="US Flag">
-              🇺🇸
+            <span className="inline-flex items-center justify-center w-5 h-3.5 rounded-xs overflow-hidden shadow-2xs border border-slate-300 bg-slate-100 shrink-0" role="img" aria-label="US Flag">
+              <svg className="w-full h-full object-cover" viewBox="0 0 640 480">
+                <path fill="#bf0a30" d="M0 0h640v480H0z"/>
+                <path stroke="#fff" strokeWidth="37" d="M0 55.4h640M0 129.2h640M0 203.1h640M0 276.9h640M0 350.8h640M0 424.6h640"/>
+                <path fill="#002868" d="M0 0h256v258.5H0z"/>
+                <circle cx="64" cy="40" r="8" fill="#fff"/>
+                <circle cx="128" cy="40" r="8" fill="#fff"/>
+                <circle cx="192" cy="40" r="8" fill="#fff"/>
+                <circle cx="96" cy="75" r="8" fill="#fff"/>
+                <circle cx="160" cy="75" r="8" fill="#fff"/>
+                <circle cx="64" cy="110" r="8" fill="#fff"/>
+                <circle cx="128" cy="110" r="8" fill="#fff"/>
+                <circle cx="192" cy="110" r="8" fill="#fff"/>
+                <circle cx="96" cy="145" r="8" fill="#fff"/>
+                <circle cx="160" cy="145" r="8" fill="#fff"/>
+                <circle cx="64" cy="180" r="8" fill="#fff"/>
+                <circle cx="128" cy="180" r="8" fill="#fff"/>
+                <circle cx="192" cy="180" r="8" fill="#fff"/>
+                <circle cx="96" cy="215" r="8" fill="#fff"/>
+                <circle cx="160" cy="215" r="8" fill="#fff"/>
+              </svg>
             </span>
             <span className="text-slate-800 font-normal text-[11px] sm:text-xs inline-flex items-center gap-1.5 min-w-0 truncate">
               <span className="truncate">An official website of the United States government</span>
