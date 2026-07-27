@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Eye, Cpu, FileCheck, CheckCircle2, Lock, Sparkles, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Eye, Cpu, FileCheck, CheckCircle2, Lock, ArrowRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export const DigitalProtectionSection: React.FC = () => {
@@ -12,7 +12,6 @@ export const DigitalProtectionSection: React.FC = () => {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3 mb-16">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-800 border border-amber-500/40 text-amber-300 text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>How Client Membership Works</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-serif-legal font-bold text-slate-100 tracking-tight">

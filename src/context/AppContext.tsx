@@ -899,8 +899,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
 
-    // If status changed to 'In Review', trigger auto-generated system mail/message to client
-    if (newStatus === 'In Review') {
+    // If status changed to 'In Review', 'Content Removed', or 'Rejected', trigger auto-generated system mail/message to client
+    if (newStatus === 'In Review' || newStatus === 'Content Removed' || newStatus === 'Rejected') {
       const targetCase = cases.find(c => c.id === caseId);
       if (targetCase && targetClientId) {
         const foundClient = clients.find(c => c.id === targetClientId);
@@ -908,7 +908,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const clientEmail = targetCase.clientEmail || (foundClient ? foundClient.email : 'client@domain.com');
 
         const caseDetailsText = `Platform: ${targetCase.platform}\nInfringing URL: ${targetCase.infringingUrl}\nOriginal URL: ${targetCase.originalUrl || 'N/A'}\nViolation Reason: ${targetCase.violationReason}\nDescription: ${targetCase.additionalDescription || 'N/A'}\nSubmitted At: ${targetCase.submittedAt}`;
-        const autoMailText = `Hi "${clientName}", we have received your case no: ${targetCase.id} and is now in review. Case You Submitted:\n${caseDetailsText}`;
+        
+        let autoMailText = '';
+        if (newStatus === 'In Review') {
+          autoMailText = `Hi "${clientName}", we have received your case no: ${targetCase.id} and is now in review. Case You Submitted:\n${caseDetailsText}`;
+        } else if (newStatus === 'Content Removed') {
+          autoMailText = `Hi "${clientName}", great news! Your case no: ${targetCase.id} for infringing URL on ${targetCase.platform} has been successfully resolved and Content Removed. Case You Submitted:\n${caseDetailsText}`;
+        } else if (newStatus === 'Rejected') {
+          autoMailText = `Hi "${clientName}", update regarding your case no: ${targetCase.id}. Your case submission has been Rejected / Closed. Notes: ${adminNotes || 'Action processed by enforcement team'}. Case You Submitted:\n${caseDetailsText}`;
+        }
 
         const msgId = 'msg-' + Date.now();
         const autoMsg: DirectMessage = {
