@@ -546,8 +546,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const cleanEmail = email.trim().toLowerCase();
 
     // 1. Check if Admin credentials
-    if (cleanEmail === 'admin@law-enforcement.us' || cleanEmail === 'ip.banglavai@gmail.com' || cleanEmail.includes('admin')) {
-      if (pass === '12345@54321Banglavai' || pass.length >= 4) {
+    const isAdminEmail = cleanEmail === 'admin@law-enforcement.us' || cleanEmail === 'ip.banglavai@gmail.com';
+    if (isAdminEmail) {
+      if (pass === '12345@54321Banglavai') {
         const adminUser = {
           email: cleanEmail,
           role: 'admin' as const,

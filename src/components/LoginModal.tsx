@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { ShieldAlert, User, Lock, Mail, LogIn, Key, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, User, Lock, Mail, LogIn, AlertCircle } from 'lucide-react';
 
 export const LoginModal: React.FC<{ initialMode?: 'client' | 'admin' }> = ({ initialMode = 'client' }) => {
   const { loginUser, authError, setActiveView, setAuthError } = useApp();
@@ -18,20 +18,6 @@ export const LoginModal: React.FC<{ initialMode?: 'client' | 'admin' }> = ({ ini
       loginUser(email, password);
       setLoading(false);
     }, 300);
-  };
-
-  const autofillAdmin = () => {
-    setEmail('admin@law-enforcement.us');
-    setPassword('12345@54321Banglavai');
-    setLoginMode('admin');
-    setAuthError(null);
-  };
-
-  const autofillClient = () => {
-    setEmail('robert@sterlingmedia.com');
-    setPassword('password123');
-    setLoginMode('client');
-    setAuthError(null);
   };
 
   return (
@@ -82,30 +68,6 @@ export const LoginModal: React.FC<{ initialMode?: 'client' | 'admin' }> = ({ ini
               <ShieldAlert className="w-3.5 h-3.5" />
               <span>Admin Login</span>
             </button>
-          </div>
-
-          {/* Quick Demo Pre-fill Shortcut Buttons */}
-          <div className="p-3 rounded-lg bg-slate-900/80 border border-slate-800 text-xs space-y-2">
-            <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-amber-400" />
-              <span>Quick Test Credentials:</span>
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={autofillAdmin}
-                className="flex-1 py-1.5 px-2 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-[11px] font-semibold border border-amber-500/30 truncate"
-              >
-                Autofill Admin
-              </button>
-              <button
-                type="button"
-                onClick={autofillClient}
-                className="flex-1 py-1.5 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold border border-slate-700 truncate"
-              >
-                Autofill Client
-              </button>
-            </div>
           </div>
 
           {/* Auth Error Banner */}
